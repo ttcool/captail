@@ -1,0 +1,25 @@
+<?php # header.html
+// This page begins the HTML header for the site.
+
+// 开启输出缓存:
+ob_start();
+
+// 初始化 session:
+session_start();
+
+// Check for a $page_title value:
+if (!isset($page_title)) {
+	$page_title = '用户注册';
+}
+?>
+<!DOCTYPE html>
+<html>
+<head>
+        <meta charset='utf-8'>
+	<title><?php echo $page_title; ?></title>
+	<link rel="stylesheet" href="includes/layout.css">
+</head>
+<body>
+<div id="Header">User Registration</div>
+<div id="Content">
+<!-- End of Header -->

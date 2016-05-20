@@ -6,7 +6,7 @@ include ('includes/header.html');
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 	require (MYSQL);
-
+        require (MAIL);
 	// Assume nothing:
 	$uid = FALSE;
 
@@ -40,14 +40,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 		
 			// Send an email:
 			$body = "Your password to log into <whatever site> has been temporarily changed to '$p'. Please log in using this password and this email address. Then you may change your password to something more familiar.";
-			mail ($_POST['email'], 'Your temporary password.', $body, 'From: admin@sitename.com');
-			
+		
+                       $mail->addAddress($_POST['email']);
+                       $mail->Subject = 'Your temporary password.';
+                       $mail->Body = $body;
+                       if(!$mail->send()) {
+                                    echo '<h3>Message could not be sent.</h3>';
+                                    echo '<h3>Mailer Error: ' . $mail->ErrorInfo.'</h3>';
+                                    } else {	
 			// Print a message and wrap up:
 			echo '<h3>Your password has been changed. You will receive the new, temporary password at the email address with which you registered. Once you have logged in with this password, you may change it by clicking on the "Change Password" link.</h3>';
 			mysqli_close($dbc);
 			include ('includes/footer.html');
 			exit(); // Stop the script.
-			
+		         }	
 		} else { // If it did not run OK.
 			echo '<p class="error">Your password could not be changed due to a system error. We apologize for any inconvenience.</p>'; 
 		}

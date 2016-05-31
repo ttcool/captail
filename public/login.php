@@ -26,14 +26,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 	if ($e && $p) { // If everything's OK.
 
 		// Query the database:
-		$q = "SELECT user_id, first_name, user_level FROM users WHERE (email='$e' AND pass=SHA1('$p')) AND active IS NULL";		
+		$q = "SELECT salt FROM users WHERE (email='$e') AND active IS NULL";
 		$r = mysqli_query ($dbc, $q) or trigger_error("Query: $q\n<br />MySQL Error: " . mysqli_error($dbc));
-		
 		if (@mysqli_num_rows($r) == 1) { // A match was made.
-
+                         
 			// Register the values:
-			$_SESSION = mysqli_fetch_array ($r, MYSQLI_ASSOC); 
+                        $_S = mysqli_fetch_array ($r, MYSQLI_ASSOC);
+                        $p = crypt($_S["salt"].$p,$_S["salt"]);
+
 			mysqli_free_result($r);
+
+                        $s = "SELECT user_id,first_name,user_level  FROM users WHERE (email='$e' AND pass='$p') AND active IS NULL";
+                        $t = mysqli_query ($dbc, $s) or trigger_error("Query: $q\n<br />MySQL Error: " . mysqli_error($dbc));
+ 
+                        if (@mysqli_num_rows($t) == 1) {
+                        $_SESSION = mysqli_fetch_array ($t, MYSQLI_ASSOC);
+			mysqli_free_result($t);
 			mysqli_close($dbc);
 							
 			// Redirect the user:
@@ -41,7 +49,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 			ob_end_clean(); // Delete the buffer.
 			header("Location: $url");
 			exit(); // Quit the script.
-				
+                      }else{ echo '<p class="error"> password entered do not match those on file </p>';}
+		  		
 		} else { // No match was made.
 			echo '<p class="error">Either the email address and password entered do not match those on file or you have not yet activated your account.</p>';
 		}

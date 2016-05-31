@@ -59,11 +59,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') { // Handle the form.
 
 			// Create the activation code:
 			$a = md5(uniqid(rand(), true));
-
+                        
+                        //Create  the salt:
+                        $salt = substr(md5(time()),0,8);
+                        
+                        $p = $salt.$p; 
 			// Add the user to the database:
-			$q = "INSERT INTO users (email, pass, first_name, last_name, active, registration_date) VALUES ('$e', SHA1('$p'), '$fn', '$ln', '$a', NOW() )";
-			$r = mysqli_query ($dbc, $q) or trigger_error("Query: $q\n<br />MySQL Error: " . mysqli_error($dbc));
-
+			$q = "INSERT INTO users (email,salt, pass, first_name, last_name, active, registration_date) VALUES ('$e','$salt', ENCRYPT('$p','$salt'), '$fn', '$ln', '$a', NOW() )";
+                        $r = mysqli_query ($dbc, $q) or trigger_error("Query: $q\n<br />MySQL Error: " . mysqli_error($dbc));
+                       
 			if (mysqli_affected_rows($dbc) == 1) { // If it ran OK.
 
 				// Send the email:
@@ -71,6 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') { // Handle the form.
 				$body .= BASE_URL . 'activate.php?x=' . urlencode($e) . "&y=$a";
 			       //	mail($trimmed['email'], 'Registration Confirmation', $body, 'From: admin@sitename.com');
                                 $mail->addAddress($trimmed['email']);
+                                $mail->Subject = 'Registration Confirmation';
 				$mail->Body = $body;
                                 if(!$mail->send()) {
                                     echo '<h3>Message could not be sent.</h3>';

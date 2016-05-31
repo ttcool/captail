@@ -30,11 +30,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 	}
 	
 	if ($p) { // If everything's OK.
+                $e = $_SESSION['user_id']; 
+                // Make the query:
+                $s = 'SELECT salt FROM users WHERE (user_id="'.$e.'") AND active IS NULL';
+                $t = mysqli_query ($dbc, $s) or trigger_error("Query: $q\n<br />MySQL Error: " . mysqli_error($dbc));
 
-		// Make the query:
-		$q = "UPDATE users SET pass=SHA1('$p') WHERE user_id={$_SESSION['user_id']} LIMIT 1";	
+                $_S = mysqli_fetch_array ($t, MYSQLI_ASSOC);
+                $p = crypt($_S["salt"].$p,$_S["salt"]);
+                mysqli_free_result($t);
+
+		$q = "UPDATE users SET pass='$p' WHERE user_id={$_SESSION['user_id']} LIMIT 1";	
 		$r = mysqli_query ($dbc, $q) or trigger_error("Query: $q\n<br />MySQL Error: " . mysqli_error($dbc));
-		if (mysqli_affected_rows($dbc) == 1) { // If it ran OK.
+                $aff = mysqli_affected_rows($dbc);
+		if ($aff == 1 || $aff == 0 ) { // If it ran OK.
 
 			// Send an email, if desired.
 			echo '<h3>Your password has been changed.</h3>';

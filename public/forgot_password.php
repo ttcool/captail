@@ -38,8 +38,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 		$q = "UPDATE users SET pass= ENCRYPT('$p','$salt') WHERE user_id='$id' LIMIT 1";
 		$r = mysqli_query ($dbc, $q) or trigger_error("Query: $q\n<br />MySQL Error: " . mysqli_error($dbc));
 		 // If it ran OK.
-		
-			// Send an email:
+		if ((mysqli_affected_rows($dbc) == 1) || (mysqli_affected_rows($dbc) == 0)) { 
+                        // Send an email:
 			$body = "Your password to log into <whatever site> has been temporarily changed to '$p'. Please log in using this password and this email address. Then you may change your password to something more familiar.";
 		
                        $mail->addAddress($_POST['email']);
@@ -54,7 +54,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 			mysqli_close($dbc);
 			include ('includes/footer.html');
 			exit(); // Stop the script.
-		         }
+		         } 
+           } else { // If it did not run OK.
+		echo '<p class="error">Your password could not be changed due to a system error. We apologize for any inconvenience.</p>'; 
+     	}
 
 	} else { // Failed the validation test.
 		echo '<p class="error">Please try again.</p>';
